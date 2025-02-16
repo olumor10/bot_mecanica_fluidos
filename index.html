@@ -11,6 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Zen+Dots&display=swap"
         rel="stylesheet">
     <link rel="icon" href="img/icon.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body {
             font-family: "Funnel Sans", serif;
@@ -45,7 +46,7 @@
         .input-field {
             width: 95%;
             padding: 10px;
-            margin: 10px 0;
+            margin: 10px;
             border: none;
             border-radius: 5px;
             background-color: #3c3c3c;
@@ -59,27 +60,36 @@
         .output-field {
             width: 95%;
             padding: 10px;
-            margin: 10px 0;
+            margin: 10px;
             border: none;
             border-radius: 5px;
             background-color: #3c3c3c;
             color: #ffffff;
             resize: none;
             overflow: auto;
-            height: auto;
-            min-height: 300px;
+            height: 300px;
             font-size: 16px;
+            text-align: left;
+        }
+
+        .output-field:empty:before {
+            content: attr(data-placeholder);
+            color: #777777;
         }
 
         .resolve-button {
-            padding: 10px 20px;
+            font-family: "Zen Dots", serif;
+            padding: 10px 10px;
             border: none;
             border-radius: 5px;
             background-color: #007acc;
             color: #ffffff;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 12px;
             margin-right: 10px;
+            width: 100px;
+            text-align: center;
+
         }
 
         .resolve-button:hover {
@@ -87,13 +97,17 @@
         }
 
         .clear-button {
-            padding: 10px 20px;
+            font-family: "Zen Dots", serif;
+            padding: 10px 10px;
             border: none;
             border-radius: 5px;
             background-color: #cc0000;
             color: #ffffff;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 12px;
+            margin-right: 10px;
+            width: 100px;
+            text-align: center;
         }
 
         .clear-button:hover {
@@ -112,7 +126,7 @@
             font-size: 10px;
             color: #aaaaaa;
             margin-top: 0;
-            margin-bottom: 0;
+            margin-bottom: -5px;
         }
 
         canvas {
@@ -124,51 +138,30 @@
             z-index: 0;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                width: 100%;
-                padding: 15px;
-            }
-
-            .input-field,
-            .output-field {
-                width: 95%;
-                font-size: 14px;
-            }
-
-            .resolve-button,
-            .clear-button {
-                width: 20%;
-                margin: 5px 0;
-                font-size: 14px;
-            }
-
-            .zen-dots-regular {
-                font-size: 24px;
-            }
-        }
-
         @media (max-width: 480px) {
             .container {
                 width: 100%;
                 padding: 10px;
+                margin: 0 auto;
             }
 
             .input-field,
             .output-field {
                 width: 95%;
-                font-size: 12px;
+                font-size: 14px;
+                display: block;
+                margin: 5px auto;
             }
 
             .resolve-button,
             .clear-button {
-                width: 20%;
-                margin: 5px 0;
+                width: 30%;
+                margin: 5px 1%;
                 font-size: 12px;
             }
 
             .zen-dots-regular {
-                font-size: 20px;
+                font-size: 24px;
             }
         }
     </style>
@@ -186,8 +179,7 @@
         <textarea id="question" class="funnel-sans input-field" placeholder="Digite sua questão aqui"></textarea>
         <button class="resolve-button funnel-sans" onclick="resolveQuestion()">Resolver</button>
         <button class="clear-button funnel-sans" onclick="clearFields()">Limpar</button>
-        <textarea id="answer" class="funnel-sans output-field" placeholder="A resposta aparecerá aqui"
-            readonly></textarea>
+        <div id="answer" class="funnel-sans output-field" data-placeholder="A resposta aparecerá aqui"></div>
         <p id="model-info" class="model-info"></p>
     </div>
 
@@ -200,10 +192,6 @@
     </script>
 
     <script type="module">
-        import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
-    </script>
-
-    <script type="module">
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
         const API_KEY = 'AIzaSyBGNF_i0BWIi4xxy93CSHXNdaxG6R-2W9E';
@@ -213,7 +201,7 @@
         async function resolveQuestion() {
             const question = document.getElementById('question').value;
             const answerField = document.getElementById('answer');
-            answerField.value = "Processando...";
+            answerField.innerHTML = "Processando...";
 
             console.log("Pergunta:", question);
 
@@ -226,9 +214,9 @@
                 const response = await result.response;
                 const text = await response.text();
                 console.log("Resposta:", text);
-                answerField.value = text;
+                answerField.innerHTML = marked.parse(text);
             } catch (error) {
-                answerField.value = "Ocorreu um erro ao obter a resposta. Por favor, tente novamente.";
+                answerField.innerHTML = "Ocorreu um erro ao obter a resposta. Por favor, tente novamente.";
                 console.error("Erro ao gerar resposta:", error);
             }
         }
@@ -237,7 +225,7 @@
 
         function clearFields() {
             document.getElementById('question').value = '';
-            document.getElementById('answer').value = '';
+            document.getElementById('answer').innerHTML = '';
         }
 
         window.clearFields = clearFields;
