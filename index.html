@@ -208,7 +208,7 @@
             try {
                 const model = genAI.getGenerativeModel({
                     model: MODEL_NAME,
-                    systemInstruction: "Você é o MecFlu, um assistente que resolve questões sobre análise dimencional e semelhança, que é uma assunto de mecânica dos fluidos.",
+                    systemInstruction: "Você é o MecFlu, um assistente que resolve questões sobre análise dimencional e semelhança, que é uma assunto de mecânica dos fluidos. Não formate as equações em LaTeX, apenas escreva-as normalmente.",
                 });
                 const result = await model.generateContent(question);
                 const response = await result.response;
