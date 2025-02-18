@@ -4,6 +4,9 @@ const API_KEY = 'AIzaSyBGNF_i0BWIi4xxy93CSHXNdaxG6R-2W9E';
 const MODEL_NAME = 'gemini-2.0-pro-exp-02-05';
 const genAI = new GoogleGenerativeAI(API_KEY);
 
+// Variável global para a imagem colada
+let pastedImage = null;
+
 // Função auxiliar para converter arquivo em base64
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -13,6 +16,22 @@ function fileToBase64(file) {
         reader.readAsDataURL(file);
     });
 }
+
+// Event listener para colar imagem via Ctrl+V
+document.addEventListener('paste', function (e) {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+            pastedImage = items[i].getAsFile();
+            // Marcar o ícone como ativo
+            const uploadIcon = document.querySelector("label[for='imageInput']");
+            uploadIcon.classList.add("active");
+            // Evita o comportamento padrão, se necessário
+            e.preventDefault();
+            break;
+        }
+    }
+});
 
 window.resolveQuestion = async function () {
     const question = document.getElementById('question').value;
@@ -28,6 +47,7 @@ window.resolveQuestion = async function () {
         });
 
         let input;
+        // Prioriza o arquivo selecionado; se não houver, verifica a imagem colada
         if (imageInput.files && imageInput.files[0]) {
             const file = imageInput.files[0];
             const base64Data = await fileToBase64(file);
@@ -35,6 +55,15 @@ window.resolveQuestion = async function () {
                 inlineData: {
                     data: base64Data,
                     mimeType: file.type,
+                },
+            };
+            input = [question, imagePart];
+        } else if (pastedImage) {
+            const base64Data = await fileToBase64(pastedImage);
+            const imagePart = {
+                inlineData: {
+                    data: base64Data,
+                    mimeType: pastedImage.type,
                 },
             };
             input = [question, imagePart];
@@ -57,6 +86,7 @@ window.clearFields = function () {
     document.getElementById('question').value = '';
     document.getElementById('answer').innerHTML = '';
     document.getElementById('imageInput').value = '';
+    pastedImage = null; // Limpa a imagem colada
     const uploadIcon = document.querySelector("label[for='imageInput']");
     uploadIcon.classList.remove("active");
 };
